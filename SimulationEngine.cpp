@@ -1,4 +1,4 @@
-#include "SimulationEngine.h"
+﻿#include "SimulationEngine.h"
 
 bool SimulationEngine::Run(const char* window_title, int window_height, int window_width, bool fullscreen)
 {
@@ -12,11 +12,10 @@ bool SimulationEngine::Run(const char* window_title, int window_height, int wind
     double previous_time = SDL_GetTicks();
     while( Running() )
     {
-        HandleInput();
         current_time = SDL_GetTicks();
-        delta_time = (float)((current_time - previous_time)/1000);
+        delta_time = (float)(current_time - previous_time)/1000;
+        HandleInput();
         Update(delta_time);
-        previous_time = current_time;
         Draw();
         previous_time = current_time;
     }
@@ -95,14 +94,13 @@ void SimulationEngine::Quit()
     SDL_GL_DeleteContext(m_cContext);
     SDL_DestroyWindow(m_cWindow);
     m_bRunning = false;
+    IMG_Quit();
     SDL_Quit();
 }
 void SimulationEngine::HandleInput()
 {
     SDL_Event event;
     // Keep the mouse in the window always
-    //SDL_WarpMouseInWindow(m_cWindow, m_iWindowHeight/2, m_iWindowWidth/2);
-    m_cCamera.HandleInput(&event);
     if (SDL_PollEvent(&event))
     {
         // Forces me to only use this for button when buttons get hit, this will only trigger when buttons are hit
@@ -113,22 +111,6 @@ void SimulationEngine::HandleInput()
             {
                 Quit();
             }
-            if( event.key.keysym.sym == SDLK_UP || event.key.keysym.sym == SDLK_w )
-            {
-                // Move world Up
-            }
-            if( event.key.keysym.sym == SDLK_DOWN || event.key.keysym.sym == SDLK_s )
-            {
-                // Move World Down
-            }
-            if( event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_d )
-            {
-                 // Move World Right
-            }
-            if( event.key.keysym.sym == SDLK_LEFT || event.key.keysym.sym == SDLK_a )
-            {
-                // Move World Left
-            }
         }
         
         if (event.type == SDL_QUIT) 
@@ -136,6 +118,8 @@ void SimulationEngine::HandleInput()
             Quit();
         }
     }
+    m_cCamera.HandleInput(&event);
+    SDL_WarpMouseInWindow(m_cWindow, m_iWindowHeight/2, m_iWindowWidth/2);
 }
 
 void SimulationEngine::Update(float delta_time)
@@ -164,6 +148,7 @@ void SimulationEngine::Cleanup()
 
 bool SimulationEngine::InitOpenGL( int window_width, int window_height )
 {
+
     // Needed for core profile
     glewExperimental = GL_TRUE;
     GLenum status = glewInit();
@@ -183,16 +168,19 @@ bool SimulationEngine::InitOpenGL( int window_width, int window_height )
     glDepthFunc(GL_LESS);
 
     // Cull triangles which normal is not towards the camera
-    //glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
 
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
 
-    //clear background screen to black when we clear it
-    glClearColor( 1.0f, 1.0f, 1.0f, 1.0f );
+    //clear background screen to dark blue when we clear it
+    glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
     // Clear The Screen And The Depth Buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    OpenGLContextInfo();
+
     return OpenGLStatus();
 }
 
@@ -210,6 +198,8 @@ bool SimulationEngine::InitSDL( const char * window_title, int window_width, int
         std::cout <<  "SDL_Init: was successful" << std::endl;
     }
 
+    // Dont Show Mouse
+    SDL_ShowCursor(0);
     int window_flags = SDL_WINDOW_SHOWN|SDL_WINDOW_OPENGL;
     if (fullscreen)
     {
@@ -228,37 +218,103 @@ bool SimulationEngine::InitSDL( const char * window_title, int window_width, int
         std::cout << "SDL_CreateWindow was successful" << std::endl;
     }
 
+    int img_flags = IMG_INIT_JPG|IMG_INIT_PNG;
+    if ((IMG_Init(img_flags) != img_flags))
+    {
+        std::cout << "IMG_Init " << SDL_GetError() << std::endl;
+        return false;
+    }
+    else
+    {
+        std::cout << "IMG_Init was successful!" << std::endl;
+    }
+
     m_cContext = SDL_GL_CreateContext(m_cWindow);
 
     if (m_cContext == NULL)
     {
         std::cout << "SDL_GL_CreateContext " << SDL_GetError() << std::endl;
+        OpenGLStatus();
         return false;
     }
     else
     {
-        std::cout << "Render Successfully Created!" << std::endl;
+        std::cout << "SDL_GL_CreateContext Successfully Created!" << std::endl;
+    }
+
+    if( !InitSDLGLAttributes() )
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool SimulationEngine::InitSDLGLAttributes()
+{
+    bool return_var = true;
+    if( SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8) == -1 )
+    {
+        std::cout <<  "SDL_GL_SetAttribute SDL_GL_STENCILSIZE: " << SDL_GetError() << std::endl;
+        return_var = false;
+    }
+
+    if( SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1) == -1 )
+    {
+        std::cout <<  "SDL_GL_SetAttribute SDL_GL_ACCELERATED_VISUAL: " << SDL_GetError() << std::endl;
+        return_var = false;
+    }
+
+    if( SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8) == -1 )
+    {
+        std::cout << "SDL_GL_SetAttribute SDL_GL_RED_SIZE: " << SDL_GetError() << std::endl;
+        return_var = false;
+    }
+    if( SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8) == -1 )
+    {
+        std::cout << "SDL_GL_SetAttribute SDL_GL_GREEN_SIZE: " << SDL_GetError() << std::endl;
+        return_var = false;
+    }
+    if( SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8) == -1 )
+    {
+        std::cout << "SDL_GL_SetAttribute SDL_GL_BLUE_SIZE: " << SDL_GetError() << std::endl;
+        return_var = false;
+    }
+
+    if( SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32) == -1 )
+    {
+        std::cout << "SDL_GL_SetAttribute SDL_GL_DEPTH_SIZE: " << SDL_GetError() << std::endl;
+        return_var = false;
+    }
+
+    if( SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1) == -1 )
+    {
+        std::cout << "SDL_GL_SetAttribute SDL_GL_DOUBLEBUFFER: " << SDL_GetError() << std::endl;
+        return_var = false;
+    }
+
+    // should enable 4x AA
+    if( SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1) == -1 )
+    {
+        std::cout << "SDL_GL_SetAttribute SDL_GL_MULTISAMPLEBUFFERS: " << SDL_GetError() << std::endl;
+        return_var = false;
+    }
+    if( SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4) == -1 )
+    {
+        std::cout << "SDL_GL_SetAttribute SDL_GL_MULTISAMPLESAMPLES: " << SDL_GetError() << std::endl;
+        return_var = false;
     }
 
     if( SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3) == -1 )
     {
-        std::cout <<  "SDL_GL_SetAttribute Major: " << SDL_GetError() << std::endl;
-        return false;
+        std::cout << "SDL_GL_SetAttribute SDL_GL_CONTEXT_MAJOR_VERSION: " << SDL_GetError() << std::endl;
+        return_var = false;
     }
-    if( SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3) == -1 )
+
+    if( SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2) == -1 )
     {
-        std::cout <<  "SDL_GL_SetAttribute Major: " << SDL_GetError() << std::endl;
-        return false;
-    }
-    if( SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8) == -1 )
-    {
-        std::cout <<  "SDL_GL_SetAttribute SDL_GL_STENCILSIZE: " << SDL_GetError() << std::endl;
-        return false;
-    }
-    if( SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1) == -1 )
-    {
-        std::cout <<  "SDL_GL_SetAttribute SDL_GL_ACCELERATED_VISUAL: " << SDL_GetError() << std::endl;
-        return false;
+        std::cout << "SDL_GL_SetAttribute SDL_GL_CONTEXT_MINOR_VERSION: " << SDL_GetError() << std::endl;
+        return_var = false;
     }
     if(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG) == -1)
     {
@@ -271,18 +327,9 @@ bool SimulationEngine::InitSDL( const char * window_title, int window_width, int
         return false;
     }
 
-    int img_flags = IMG_INIT_JPG|IMG_INIT_PNG;
-    if ((IMG_Init(img_flags) != img_flags))
-    {
-        std::cout << "IMG_Init " << SDL_GetError() << std::endl;
-        return false;
-    }
-    else
-    {
-        std::cout << "IMG_Init was successful!" << std::endl;
-    }
-
-    return true;
+    std::cout <<  "OpenGLStatus After SDL GL SetAttribute Calls: " << std::endl;
+    OpenGLStatus();
+    return return_var;
 }
 
 bool SimulationEngine::OpenGLStatus()
@@ -320,4 +367,22 @@ bool SimulationEngine::OpenGLStatus()
         printf("UNKNWON\n");
     }
     return false;
+}
+
+// Print Stuff about the context we created
+bool SimulationEngine::OpenGLContextInfo()
+{
+    printf("OpenGL version Info: %s\n", glGetString(GL_VERSION) );
+    printf("OpenGL Vendor Info: %s\n", glGetString(GL_VENDOR) );
+    printf("OpenGL Renderer Info: %s\n", glGetString(GL_RENDERER) );
+    int open_gl_extension_count;
+    glGetIntegerv(GL_NUM_EXTENSIONS, &open_gl_extension_count);
+    for(int i = 0; i < open_gl_extension_count; i++)
+    {
+        printf("Extension %i info: %s\n", i, glGetStringi(GL_EXTENSIONS, i));
+    }
+
+    printf("OpenGL Shader Info: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION) );
+
+    return true;
 }

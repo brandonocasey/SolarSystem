@@ -3,10 +3,10 @@
 void Camera::Init()
 {
     // Start the camera at the origin
-    m_v3Position = glm::vec3( 0, 0, 5 );
+    m_v3Position = glm::vec3( 0, 0, -5 );
 
     // Toward -Z
-    m_fHorizontalAngle = 0.0f;
+    m_fHorizontalAngle = 3.14f;
 
     // 0 looks at the horizon
     m_fVerticalAngle = 0.0f;
@@ -15,7 +15,7 @@ void Camera::Init()
     m_fInitialFieldOfView = 45.0f;
 
     // 3 Units per second
-    m_fSpeed = 3.0f;
+    m_fSpeed = 100.0f;
 
     float m_fMouseSpeed = 0.005f;
 
@@ -31,14 +31,13 @@ void Camera::Init()
 
 void Camera::HandleInput(SDL_Event* event)
 {
-    SDL_GetMouseState(&m_iMouseX, &m_iMouseY);
-    printf("Normal: x = %i and y = %i\n", m_iMouseX, m_iMouseY);
-    //SDL_GetRelativeMouseState(&mouse_x, &mouse_y);
+    //SDL_GetMouseState(&m_iMouseX, &m_iMouseY);
+    //printf("Normal: x = %i and y = %i\n", m_iMouseX, m_iMouseY);
+    SDL_GetRelativeMouseState(&m_iMouseX, &m_iMouseY);
     //printf("Relative: x = %i and y = %i\n", mouse_x, mouse_y);
-
     if(event->type == SDL_KEYDOWN )
     {
-        if( event->key.keysym.sym == SDLK_UP )
+        if( event->key.keysym.sym == SDLK_UP || event->key.keysym.sym == SDLK_w )
         {
             m_bUp = true;
         }
@@ -46,7 +45,7 @@ void Camera::HandleInput(SDL_Event* event)
         {
             m_bUp = false;
         }
-        if( event->key.keysym.sym == SDLK_RIGHT )
+        if( event->key.keysym.sym == SDLK_RIGHT || event->key.keysym.sym == SDLK_d)
         {
             m_bRight = true;
         }
@@ -54,7 +53,8 @@ void Camera::HandleInput(SDL_Event* event)
         {
             m_bRight = false;
         }
-        if( event->key.keysym.sym == SDLK_DOWN )
+
+        if( event->key.keysym.sym == SDLK_DOWN || event->key.keysym.sym == SDLK_s)
         {
             m_bDown = true;
         }
@@ -62,7 +62,7 @@ void Camera::HandleInput(SDL_Event* event)
         {
             m_bDown = false;
         }
-        if( event->key.keysym.sym == SDLK_LEFT )
+        if( event->key.keysym.sym == SDLK_LEFT || event->key.keysym.sym == SDLK_a )
         {
             m_bLeft = true;
         }
@@ -71,18 +71,26 @@ void Camera::HandleInput(SDL_Event* event)
             m_bLeft = false;
         }
     }
+    else
+    {
+        m_bUp = false;
+        m_bRight = false;
+        m_bDown = false;
+        m_bLeft = false;
+    }
 
     if(event->type == SDL_MOUSEWHEEL )
     {
         // we only want the up and down scroll which is y
-        m_iMouseScroll = event->wheel.y;
+        m_iMouseScroll += event->wheel.y;
+        printf("scroll = %d\n", m_iMouseScroll);
     }
 }
 
 void Camera::Update( float delta_time )
 {
-    m_fHorizontalAngle = m_fMouseSpeed * delta_time * float( 1000/2 - m_iMouseX);
-    m_fVerticalAngle = m_fMouseSpeed * delta_time * float( 1000/2 - m_iMouseY);
+    m_fHorizontalAngle = m_fMouseSpeed * delta_time * float( m_iMouseX);
+    m_fVerticalAngle = m_fMouseSpeed * delta_time * float( m_iMouseY);
 
     glm::vec3 direction = glm::vec3(
         cos(m_fVerticalAngle) * sin(m_fHorizontalAngle),
@@ -97,24 +105,37 @@ void Camera::Update( float delta_time )
         cos(m_fHorizontalAngle - 3.14f/2.0f)
         );
 
-
     glm::vec3 up = glm::cross( right, direction );
 
     if( m_bUp )
     {
+        printf("UP x=%f, y=%f, z=%f\n", m_v3Position.x, m_v3Position.y, m_v3Position.z);
         m_v3Position += direction * delta_time * m_fSpeed;
     }
     if( m_bDown )
     {
+        printf("DOWN x=%f, y=%f, z=%f\n", m_v3Position.x, m_v3Position.y, m_v3Position.z);
         m_v3Position -= direction * delta_time * m_fSpeed;
-    }
-    if( m_bLeft )
-    {
-        m_v3Position += direction * delta_time * m_fSpeed;
     }
     if( m_bRight )
     {
-        m_v3Position -= direction * delta_time * m_fSpeed;
+        printf("RIGHT x=%f, y=%f, z=%f\n", m_v3Position.x, m_v3Position.y, m_v3Position.z);
+        m_v3Position += right * delta_time * m_fSpeed;
+    }
+    if( m_bLeft )
+    {
+        printf("LEFT x=%f, y=%f, z=%f\n", m_v3Position.x, m_v3Position.y, m_v3Position.z);
+        m_v3Position -= right * delta_time * m_fSpeed;
+    }
+
+    // Limit Mouse Scroll
+    if( m_iMouseScroll < -14 )
+    {
+        m_iMouseScroll = -14;
+    }
+    if( m_iMouseScroll > 3 )
+    {
+        m_iMouseScroll = 3;
     }
 
     float FoV = m_fInitialFieldOfView - 5 * m_iMouseScroll;

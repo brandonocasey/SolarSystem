@@ -11,229 +11,167 @@ void Sun::InitRotation( bool rotation, int rotation_speed, double radius )
     m_iRotationSpeed = rotation_speed;
     m_dRadius = radius;
 
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
 
-    // Create a Vertex Buffer Object and copy the vertex data to it
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-
-    GLfloat vertices[] = {
-        -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-
-        -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-        0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-
-        -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-
-        0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-        0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-        0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-        0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-
-        -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-        0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-
-        -1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-        1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        1.0f,  1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-        1.0f,  1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-        -1.0f,  1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-        -1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
+    // Our vertices. Tree consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
+    // A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
+    static const GLfloat g_vertex_buffer_data[] = { 
+        -1.0f,-1.0f,-1.0f,
+        -1.0f,-1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,
+        -1.0f,-1.0f,-1.0f,
+        -1.0f, 1.0f,-1.0f,
+        1.0f,-1.0f, 1.0f,
+        -1.0f,-1.0f,-1.0f,
+        1.0f,-1.0f,-1.0f,
+        1.0f, 1.0f,-1.0f,
+        1.0f,-1.0f,-1.0f,
+        -1.0f,-1.0f,-1.0f,
+        -1.0f,-1.0f,-1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f,-1.0f,
+        1.0f,-1.0f, 1.0f,
+        -1.0f,-1.0f, 1.0f,
+        -1.0f,-1.0f,-1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f,-1.0f, 1.0f,
+        1.0f,-1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,
+        1.0f, 1.0f,-1.0f,
+        1.0f,-1.0f,-1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f,-1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,
+        -1.0f, 1.0f,-1.0f,
+        1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f,-1.0f,
+        -1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+        1.0f,-1.0f, 1.0f
     };
 
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    OpenGLStatus();
-
-    // Tell it what indices's make up an element
-    /*
-    GLuint elements[] =
-    {
-        0, 1, 2,
-        2, 3, 0
+    // Two UV coordinates for each vertex. They were created withe Blender.
+    static const GLfloat g_uv_buffer_data[] = { 
+        0.000059f, 0.000004f, 
+        0.000103f, 0.336048f, 
+        0.335973f, 0.335903f, 
+        1.000023f, 0.000013f, 
+        0.667979f, 0.335851f, 
+        0.999958f, 0.336064f, 
+        0.667979f, 0.335851f, 
+        0.336024f, 0.671877f, 
+        0.667969f, 0.671889f, 
+        1.000023f, 0.000013f, 
+        0.668104f, 0.000013f, 
+        0.667979f, 0.335851f, 
+        0.000059f, 0.000004f, 
+        0.335973f, 0.335903f, 
+        0.336098f, 0.000071f, 
+        0.667979f, 0.335851f, 
+        0.335973f, 0.335903f, 
+        0.336024f, 0.671877f, 
+        1.000004f, 0.671847f, 
+        0.999958f, 0.336064f, 
+        0.667979f, 0.335851f, 
+        0.668104f, 0.000013f, 
+        0.335973f, 0.335903f, 
+        0.667979f, 0.335851f, 
+        0.335973f, 0.335903f, 
+        0.668104f, 0.000013f, 
+        0.336098f, 0.000071f, 
+        0.000103f, 0.336048f, 
+        0.000004f, 0.671870f, 
+        0.336024f, 0.671877f, 
+        0.000103f, 0.336048f, 
+        0.336024f, 0.671877f, 
+        0.335973f, 0.335903f, 
+        0.667969f, 0.671889f, 
+        1.000004f, 0.671847f, 
+        0.667979f, 0.335851f
     };
 
-    GLuint ebo;
-    glGenBuffers(1, &ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
-    */
+    glGenVertexArrays(1, &m_iVertexArrayID);
+    glBindVertexArray(m_iVertexArrayID);
 
-    //Vertext Shader
-    const char * vertexSource = "Triangle.vshader";
+    // Load our shaders
+    m_iShaderProgram = LoadShader("Triangle.vshader", "Triangle.fshader");
 
 
-    // Fragment Shader
-    const char * fragmentSource = "Triangle.fshader";
+    glGenBuffers(1, &m_iVertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, m_iVertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
-
-    m_iShaderProgram = LoadShader(vertexSource, fragmentSource);
-    // use them
-    glBindFragDataLocation(m_iShaderProgram, 0, "outColor");
-    glUseProgram(m_iShaderProgram);
-
-    // Specify the layout of the vertex data
-    GLint posAttrib = glGetAttribLocation(m_iShaderProgram, "position");
-    glEnableVertexAttribArray(posAttrib);
-    // size of 2, first 2 float points, of type float, dont do something, grab 5 of them, skip 0
-    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), 0);
-
-    GLint colAttrib = glGetAttribLocation(m_iShaderProgram, "color");
-    glEnableVertexAttribArray(colAttrib);
-    glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
-
-    GLint texAttrib = glGetAttribLocation(m_iShaderProgram, "texcoord");
-    glEnableVertexAttribArray(texAttrib);
-    glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
-
-
-    int mode;
-    SDL_Surface* image;
-    // Load textures
-    GLuint textures[2];
-    glGenTextures(2, textures);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textures[0]);
-    image = GetSurfaceAndMode("sample.png", &mode);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image->w, image->h, 0, mode, GL_UNSIGNED_BYTE, image->pixels);
-    SDL_FreeSurface(image);
-    glUniform1i(glGetUniformLocation(m_iShaderProgram, "texKitten"), 0);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, textures[1]);
-    image = GetSurfaceAndMode("sample2.png", &mode);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image->w, image->h, 0, mode, GL_UNSIGNED_BYTE, image->pixels);
-    SDL_FreeSurface(image);
-    glUniform1i(glGetUniformLocation(m_iShaderProgram, "texPuppy"), 1);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Set up projection
-// Set up projection
-    glm::mat4 view = glm::lookAt(
-        glm::vec3(2.5f, 2.5f, 2.0f),
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(0.0f, 0.0f, 1.0f)
-    );
-    GLint uniView = glGetUniformLocation(m_iShaderProgram, "view");
-    glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
-
-    glm::mat4 proj = glm::perspective(45.0f, 800.0f / 600.0f, 1.0f, 10.0f);
-    GLint uniProj = glGetUniformLocation(m_iShaderProgram, "proj");
-    glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
-
-
-
-    m_fAngle = -45.0f;
-    m_fSpeed = 0.0f;
-    OpenGLStatus();
+    glGenBuffers(1, &m_iUVBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, m_iUVBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data, GL_STATIC_DRAW);
+    m_iTexture = LoadTexture("sample2.png");
 }
 
 void Sun::Update(float delta_time, Camera* camera)
 {
-    GLint uniModel = glGetUniformLocation(m_iShaderProgram, "model");
-    // Calculate transformation
-    glm::mat4 model;
-    model = glm::rotate(
-        model,
-        (GLfloat)SDL_GetTicks() / (GLfloat)CLOCKS_PER_SEC * 180.0f,
-        glm::vec3(0.0f, 0.0f, 1.0f)
-        );
-    glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
+    GLint mvp_id = glGetUniformLocation(m_iShaderProgram, "MVP");
 
+    glm::mat4 ProjectionMatrix = camera->GetProjectionMatrix();
+    glm::mat4 ViewMatrix = camera->GetViewMatrix();
+
+    //glm::mat4 ProjectionMatrix = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.0f);
+    //// Camera matrix
+    //glm::mat4 ViewMatrix       = glm::lookAt(
+    //    glm::vec3(4,3,3), // Camera is at (4,3,3), in World Space
+    //    glm::vec3(0,0,0), // and looks at the origin
+    //    glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+    //    );
+    glm::mat4 ModelMatrix = glm::mat4(1.0);
+   
+    glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+    // Send our transformation to the currently bound shader, 
+    // in the "MVP" uniform
+    glUniformMatrix4fv(mvp_id, 1, GL_FALSE, glm::value_ptr(MVP));
 }
 
 void Sun::Draw()
 {
-    GLint uniColor = glGetUniformLocation(m_iShaderProgram, "overrideColor");
-    GLint uniModel = glGetUniformLocation(m_iShaderProgram, "model");
-    // Calculate transformation
-    glm::mat4 model;
-    model = glm::rotate(
-        model,
-        (GLfloat)SDL_GetTicks() / (GLfloat)CLOCKS_PER_SEC * 180.0f,
-        glm::vec3(0.0f, 0.0f, 1.0f)
+    glUseProgram(m_iShaderProgram);
+    GLint texture_id = glGetUniformLocation(m_iShaderProgram, "texPuppy");
+
+    // Bind our texture in Texture Unit 0
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_iTexture);
+
+    // Set our "texPuppy" sampler to user Texture Unit 0
+    glUniform1i(texture_id, 0);
+
+    // 1st attribute buffer : vertices's
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, m_iVertexBuffer);
+    glVertexAttribPointer(
+        0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
+        3,                  // size
+        GL_FLOAT,           // type
+        GL_FALSE,           // normalized?
+        0,                  // stride
+        (void*)0            // array buffer offset
         );
-    glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
-    // Draw cube
-    glDrawArrays(GL_TRIANGLES, 0, 36);
 
-    glEnable(GL_STENCIL_TEST);
+    // 2nd attribute buffer : UVs
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, m_iUVBuffer);
+    glVertexAttribPointer(
+        1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
+        2,                                // size : U+V => 2
+        GL_FLOAT,                         // type
+        GL_FALSE,                         // normalized?
+        0,                                // stride
+        (void*)0                          // array buffer offset
+        );
 
-    // Draw floor
-    glStencilFunc(GL_ALWAYS, 1, 0xFF);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    glStencilMask(0xFF);
-    glDepthMask(GL_FALSE);
-    glClear(GL_STENCIL_BUFFER_BIT);
+    glDrawArrays(GL_TRIANGLES, 0, 12*3); // 12*3 indices starting at 0 -> 12 triangles
 
-    glDrawArrays(GL_TRIANGLES, 36, 6);
-
-    // Draw cube reflection
-    glStencilFunc(GL_EQUAL, 1, 0xFF);
-    glStencilMask(0x00);
-    glDepthMask(GL_TRUE);
-
-    model = glm::scale(glm::translate(model, glm::vec3(0, 0, -1)), glm::vec3(1, 1, -1));
-    glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
-
-    glUniform3f(uniColor, 0.3f, 0.3f, 0.3f);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    glUniform3f(uniColor, 1.0f, 1.0f, 1.0f);
-
-    glDisable(GL_STENCIL_TEST);
-
-    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    
-    // Used to control what gets translated/rotated when
-    //glPushMatrix();
-
-    //glPopMatrix();
-    //glLoadIdentity();
-    //glRotatef((float) glfwGetTime() * m_iRotationSpeed, 0.f, 0.f, m_iRotationSpeed);
-
-    //glTranslatef(0.2f, 0, 0);
-    //SolidSphere();
-
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
 }
 Sun::Sun()
 {
@@ -242,22 +180,65 @@ Sun::Sun()
 
 void Sun::Cleanup()
 {
+    glDeleteBuffers(1, &m_iVertexBuffer);
+    glDeleteBuffers(1, &m_iUVBuffer);
     glDeleteProgram(m_iShaderProgram);
-    /*
-    glDeleteTextures(2, textures);
-
-    glDeleteProgram(shaderProgram);
-    glDeleteShader(fragmentShader);
-    glDeleteShader(vertexShader);
-
-    glDeleteBuffers(1, &ebo);
-    glDeleteBuffers(1, &vbo);
-
-    glDeleteVertexArrays(1, &vao);
-    */
+    glDeleteTextures(1, &m_iTexture);
+    glDeleteVertexArrays(1, &m_iVertexArrayID);
 }
 
 
+GLuint Sun::LoadTexture(const char * location)
+{
+    int mode; // the mode of the texture that SDL_image loaded
+    SDL_Surface* image = IMG_Load(location);
+
+    // Get the OpenGL mode of the SDL Image, kind of hacky :/
+    switch (image->format->BytesPerPixel)
+    {
+    case 4:
+        if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+            mode = GL_BGRA;
+        else
+            mode = GL_RGBA;
+        break;
+
+    case 3:
+        if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+            mode = GL_BGR;
+        else
+            mode = GL_RGB;
+        break;
+    }
+
+    // Create one OpenGL texture
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+
+    // "Bind" the newly created texture : all future texture functions will modify this texture
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    // Give the image to OpenGL
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image->w, image->h, 0, mode, GL_UNSIGNED_BYTE, image->pixels);
+
+    // OpenGL has now copied the data. Free our own version
+    SDL_FreeSurface(image);
+
+    // Poor filtering, or ...
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); 
+
+    // ... nice trilinear filtering.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); 
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    OpenGLStatus();
+    // Return the ID of the texture we just created
+    return textureID;
+}
 
 std::string Sun::ReadFile(const char *filePath)
 {
@@ -348,33 +329,6 @@ GLuint Sun::LoadShader(const char *vertex_path, const char *fragment_path) {
     glDeleteShader(vertShader);
     glDeleteShader(fragShader);
 
+
     return program;
-}
-
-SDL_Surface* Sun::GetSurfaceAndMode( const char * location, int *mode )
-{
-    SDL_Surface* surface = IMG_Load(location);
-
-    GLuint tex;
-    glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
-
-    switch (surface->format->BytesPerPixel)
-    {
-    case 4:
-        if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-            *mode = GL_BGRA;
-        else
-            *mode = GL_RGBA;
-        break;
-
-    case 3:
-        if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-            *mode = GL_BGR;
-        else
-            *mode = GL_RGB;
-        break;
-    }
-
-    return surface;
 }

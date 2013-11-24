@@ -1,15 +1,16 @@
 #version 330 core
 
-in vec3 Color;
-in vec2 Texcoord;
+// interpolated values from the vertex shaders
+in vec2 UV;
 
-out vec4 outColor;
+// Output data
+out vec3 color;
 
-uniform sampler2D texKitten;
+// values that stay constant
 uniform sampler2D texPuppy;
 
 void main()
 {
-    vec4 texColor = mix(texture(texKitten, Texcoord), texture(texPuppy, Texcoord), 0.5);
-    outColor = vec4(Color, 1.0) * texColor;
+    // Output color = color of the texture at this UV location
+    color = texture2D( texPuppy, UV).rgb;
 }

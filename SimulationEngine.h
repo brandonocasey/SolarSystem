@@ -18,6 +18,8 @@ public:
     bool InitOpenGL(int window_width, int window_height);
     bool InitSDL(const char * window_title, int window_width, int window_height, bool fullscreen);
     bool OpenGLStatus();
+    bool OpenGLContextInfo();
+    bool InitSDLGLAttributes();
 private:
     bool m_bRunning;
     Camera m_cCamera;

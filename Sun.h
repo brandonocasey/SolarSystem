@@ -11,10 +11,12 @@ public:
     std::string ReadFile(const char* file_path);
     GLuint LoadShader(const char*vertex_path, const char*fragment_path);
     Sun();
-    SDL_Surface* GetSurfaceAndMode(const char * location, int *mode);
+    GLuint Sun::LoadTexture(const char * location);
 
 private:
     GLuint m_iShaderProgram;
-    GLfloat m_fSpeed;
-    GLfloat m_fAngle;
+    GLuint m_iTexture;
+    GLuint m_iUVBuffer;
+    GLuint m_iVertexBuffer;
+    GLuint m_iVertexArrayID;
 };
