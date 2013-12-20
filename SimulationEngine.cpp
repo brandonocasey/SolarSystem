@@ -8,19 +8,29 @@ bool SimulationEngine::Run(const char* window_title, int window_height, int wind
         return false;
     }
     float delta_time;
-    double current_time;
-    double previous_time = SDL_GetTicks();
+    float current_time = GetTime();
+    float previous_time = GetTime();
     while( Running() )
     {
-        current_time = SDL_GetTicks();
-        delta_time = (float)(current_time - previous_time)/1000;
-        HandleInput();
+        previous_time = current_time;
+        current_time = GetTime();
+        delta_time = current_time - previous_time;
+
+            if( delta_time > 1 )
+            {
+                printf("delta time = %f", delta_time);
+            }
+        HandleInput(delta_time);
         Update(delta_time);
         Draw();
-        previous_time = current_time;
     }
 
     return true;
+}
+
+float SimulationEngine::GetTime()
+{
+    return (float)(SDL_GetTicks()/1000.0f);
 }
 
 bool SimulationEngine::Running()
@@ -29,9 +39,9 @@ bool SimulationEngine::Running()
 }
 
 
-bool SimulationEngine::Init(const char* window_title, int window_height, int window_width, bool fullscreen)
+bool SimulationEngine::Init(const char* window_title, int window_width, int window_height, bool fullscreen)
 {
-    if( !InitSDL(window_title, window_height, window_width, fullscreen) )
+    if( !InitSDL(window_title, window_width, window_height, fullscreen) )
     {
         return false;
     }
@@ -45,45 +55,52 @@ bool SimulationEngine::Init(const char* window_title, int window_height, int win
     // Keep the mouse in the window always
     m_cCamera.Init();
 
+    //              days,            miles,           days,               miles
+    // ( float rotation_speed, float radius, float orbit_speed, int distance_from_sun, std::string texture_path )
     // the sun
-    Sun* sun = new Sun;
-    sun->InitRotation(true, 25, 432450);
-    m_vPlanetList.push_back( sun );
+    m_vPlanetList.push_back( new BaseSphere );
+    m_vPlanetList.back()->Init(25, 432450, 0, 0, "sunmap.jpg", nullptr);
 
-    /*
-    //(bool rotate, bool orbit, int rotation_speed, int orbit_speed, int orbit_distance, int radius);
-    BaseSphere* Earth;
-    Earth->Init( true, true, 1, 365, 92960000, 3959, Sun )
-    m_vPlanetList.push_back( Earth );
+    // Mercury
+    m_vPlanetList.push_back( new BaseSphere );
+    m_vPlanetList.back()->Init(59, 15000, 88, 1,  "mercurymap.jpg", m_vPlanetList[0]);
 
-    BaseSphere* Uranus;
-    Uranus->Init( true, true, (17.14/24), (84*365), 1787000000, 15759, Sun )
-    m_vPlanetList.push_back( Uranus );
 
-    BaseSphere* Saturn;
-    Saturn->Init( true, true, (10.39/24), (29*365), 890700000, 36184, Sun )
-    m_vPlanetList.push_back( Saturn );
+    // Venus
+    m_vPlanetList.push_back( new BaseSphere );
+    m_vPlanetList.back()->Init(117, 37600, 225, 2,  "venusmap.jpg", m_vPlanetList[0]);
 
-    BaseSphere* Neptune;
-    Neptune->Init( true, true, (16.06/24), (365*164.79), 2798000000, 15299, Sun )
-    m_vPlanetList.push_back( Neptune );
 
-    BaseSphere* Jupiter;
-    Jupiter->Init( true, true, (9.56/24), (265*12), 483800000, 43441, Sun )
-    m_vPlanetList.push_back( Jupiter );
+    // Earth
+    m_vPlanetList.push_back( new BaseSphere );
+    m_vPlanetList.back()->Init(1, 39590, 965, 3,  "earthmap1k.jpg", m_vPlanetList[0]);
 
-    BaseSphere* Venus;
-    Venus->Init( true, true, 116.18, 225, 67240000, 3760, Sun )
-    m_vPlanetList.push_back( Venus );
 
-    BaseSphere* Mars;
-    Mars->Init( true, true, 1.004, 687, 141600000, 2106, Sun )
-    m_vPlanetList.push_back( Mars );
 
-    BaseSphere* Mercury;
-    Mercury->Init( true, true, (58 +(15.3/24)), 88, 35980000, 1516, Sun )
-    m_vPlanetList.push_back( Mercury );
-    */
+    // Mars
+    m_vPlanetList.push_back( new BaseSphere );
+    m_vPlanetList.back()->Init(1, 21060, 687, 4,  "mars_1k_color.jpg", m_vPlanetList[0]);
+
+
+    // Jupiter
+    m_vPlanetList.push_back( new BaseSphere );
+    m_vPlanetList.back()->Init( 0.4f, 434410, (12*365), 5,  "jupitermap.jpg", m_vPlanetList[0]);
+
+
+    // Saturn
+    m_vPlanetList.push_back( new BaseSphere );
+    m_vPlanetList.back()->Init(0.4f, 361840, (29 * 365), 6,  "saturnmap.jpg", m_vPlanetList[0]);
+
+
+
+    // Uranus
+    m_vPlanetList.push_back( new BaseSphere );
+    m_vPlanetList.back()->Init(0.7f, 157590, (84 * 365), 7,  "uranusmap.jpg", m_vPlanetList[0]);
+
+
+    // Neptune
+    m_vPlanetList.push_back( new BaseSphere );
+    m_vPlanetList.back()->Init(0.6f, 152990, (60190), 8,  "neptunemap.jpg", m_vPlanetList[0]);
 
     m_bRunning = true;
     return true;
@@ -91,13 +108,19 @@ bool SimulationEngine::Init(const char* window_title, int window_height, int win
 
 void SimulationEngine::Quit()
 {
+    for(BaseSphere* planet : m_vPlanetList)
+    {
+        planet->Cleanup();
+    }
+
     SDL_GL_DeleteContext(m_cContext);
     SDL_DestroyWindow(m_cWindow);
     m_bRunning = false;
+
     IMG_Quit();
     SDL_Quit();
 }
-void SimulationEngine::HandleInput()
+void SimulationEngine::HandleInput(float delta_time)
 {
     SDL_Event event;
     // Keep the mouse in the window always
@@ -118,13 +141,14 @@ void SimulationEngine::HandleInput()
             Quit();
         }
     }
-    m_cCamera.HandleInput(&event);
+    m_cCamera.HandleInput(&event, delta_time);
     SDL_WarpMouseInWindow(m_cWindow, m_iWindowHeight/2, m_iWindowWidth/2);
 }
 
 void SimulationEngine::Update(float delta_time)
 {
     m_cCamera.Update(delta_time);
+
     for(BaseSphere* planet : m_vPlanetList)
     {
         planet->Update(delta_time, &m_cCamera);
@@ -158,9 +182,7 @@ bool SimulationEngine::InitOpenGL( int window_width, int window_height )
         return false;
     }
 
-    // Set our viewport at 0, 0 with a height and width equal to the window
     glViewport(0, 0, window_width, window_height);
-
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
 
@@ -171,11 +193,12 @@ bool SimulationEngine::InitOpenGL( int window_width, int window_height )
     glEnable(GL_CULL_FACE);
 
 
+
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
 
     //clear background screen to dark blue when we clear it
-    glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     // Clear The Screen And The Depth Buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -204,6 +227,11 @@ bool SimulationEngine::InitSDL( const char * window_title, int window_width, int
     if (fullscreen)
     {
         window_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    }
+
+    if( !InitSDLGLAttributes() )
+    {
+        return false;
     }
 
     m_cWindow = SDL_CreateWindow(window_title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, window_width, window_height, window_flags);
@@ -242,93 +270,15 @@ bool SimulationEngine::InitSDL( const char * window_title, int window_width, int
         std::cout << "SDL_GL_CreateContext Successfully Created!" << std::endl;
     }
 
-    if( !InitSDLGLAttributes() )
-    {
-        return false;
-    }
-
     return true;
 }
 
 bool SimulationEngine::InitSDLGLAttributes()
 {
     bool return_var = true;
-    if( SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8) == -1 )
-    {
-        std::cout <<  "SDL_GL_SetAttribute SDL_GL_STENCILSIZE: " << SDL_GetError() << std::endl;
-        return_var = false;
-    }
-
-    if( SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1) == -1 )
-    {
-        std::cout <<  "SDL_GL_SetAttribute SDL_GL_ACCELERATED_VISUAL: " << SDL_GetError() << std::endl;
-        return_var = false;
-    }
-
-    if( SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8) == -1 )
-    {
-        std::cout << "SDL_GL_SetAttribute SDL_GL_RED_SIZE: " << SDL_GetError() << std::endl;
-        return_var = false;
-    }
-    if( SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8) == -1 )
-    {
-        std::cout << "SDL_GL_SetAttribute SDL_GL_GREEN_SIZE: " << SDL_GetError() << std::endl;
-        return_var = false;
-    }
-    if( SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8) == -1 )
-    {
-        std::cout << "SDL_GL_SetAttribute SDL_GL_BLUE_SIZE: " << SDL_GetError() << std::endl;
-        return_var = false;
-    }
-
-    if( SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32) == -1 )
-    {
-        std::cout << "SDL_GL_SetAttribute SDL_GL_DEPTH_SIZE: " << SDL_GetError() << std::endl;
-        return_var = false;
-    }
-
-    if( SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1) == -1 )
-    {
-        std::cout << "SDL_GL_SetAttribute SDL_GL_DOUBLEBUFFER: " << SDL_GetError() << std::endl;
-        return_var = false;
-    }
-
-    // should enable 4x AA
-    if( SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1) == -1 )
-    {
-        std::cout << "SDL_GL_SetAttribute SDL_GL_MULTISAMPLEBUFFERS: " << SDL_GetError() << std::endl;
-        return_var = false;
-    }
-    if( SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4) == -1 )
-    {
-        std::cout << "SDL_GL_SetAttribute SDL_GL_MULTISAMPLESAMPLES: " << SDL_GetError() << std::endl;
-        return_var = false;
-    }
-
-    if( SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3) == -1 )
-    {
-        std::cout << "SDL_GL_SetAttribute SDL_GL_CONTEXT_MAJOR_VERSION: " << SDL_GetError() << std::endl;
-        return_var = false;
-    }
-
-    if( SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2) == -1 )
-    {
-        std::cout << "SDL_GL_SetAttribute SDL_GL_CONTEXT_MINOR_VERSION: " << SDL_GetError() << std::endl;
-        return_var = false;
-    }
-    if(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG) == -1)
-    {
-        std::cout <<  "SDL_GL_SetAttribute SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG: " << SDL_GetError() << std::endl;
-        return false;
-    }
-    if( SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE) == -1 )
-    {
-        std::cout <<  "SDL_GL_SetAttribute SDL_GL_CONTEXT_PROFILE_CORE: " << SDL_GetError() << std::endl;
-        return false;
-    }
 
     std::cout <<  "OpenGLStatus After SDL GL SetAttribute Calls: " << std::endl;
-    OpenGLStatus();
+
     return return_var;
 }
 

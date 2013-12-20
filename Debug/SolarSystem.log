@@ -1,7 +1,6 @@
 ﻿  SimulationEngine.cpp
-LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
-MSVCRTD.lib(cinitexe.obj) : warning LNK4098: defaultlib 'msvcrt.lib' conflicts with use of other libs; use /NODEFAULTLIB:library
-glew32s.lib(glew.obj) : warning LNK4099: PDB 'vc100.pdb' was not found with 'glew32s.lib(glew.obj)' or at 'E:\Libraries\Cloud Storage\Dropbox\School\14 - Fall 2013\Industrial Simulation Project\SolarSystem\SolarSystem\Debug\vc100.pdb'; linking object as if no debug info
+e:\libraries\cloud storage\dropbox\school\14 - fall 2013\industrial simulation project\solarsystem\solarsystem\solarsystem\utils.h(12): warning C4005: '_CRT_SECURE_NO_WARNINGS' : macro redefinition
+          command-line arguments :  see previous definition of '_CRT_SECURE_NO_WARNINGS'
   SolarSystem.vcxproj -> E:\Libraries\Cloud Storage\Dropbox\School\14 - Fall 2013\Industrial Simulation Project\SolarSystem\SolarSystem\Debug\SolarSystem.exe
   E:\Libraries\Cloud Storage\Dropbox\School\14 - Fall 2013\Industrial Simulation Project\SolarSystem\SolarSystem\SolarSystem\Assets\glfw3.dll
   E:\Libraries\Cloud Storage\Dropbox\School\14 - Fall 2013\Industrial Simulation Project\SolarSystem\SolarSystem\SolarSystem\Assets\libFLAC-8.dll

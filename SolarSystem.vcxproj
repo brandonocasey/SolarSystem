@@ -45,6 +45,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>E:\libs\GLEW\include;E:\libs\SDL\include;E:\libs\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -76,23 +77,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BaseSphere.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Planet.cpp" />
     <ClCompile Include="SimulationEngine.cpp" />
-    <ClCompile Include="Sun.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseSphere.h" />
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="Planet.h" />
     <ClInclude Include="SimulationEngine.h" />
-    <ClInclude Include="Sun.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Triangle.fshader" />
-    <None Include="Triangle.vshader" />
+    <None Include="Planet.fragment_shader" />
+    <None Include="Planet.vertex_shader" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

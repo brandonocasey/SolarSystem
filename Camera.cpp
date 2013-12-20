@@ -1,133 +1,121 @@
 #include "Camera.h"
 
+// Camera Constants
+
+static const float MaxVerticalAngle = 85.0f;
+static const float CameraSpeed = 10.0f;
+static const float MouseSensitivity = 1.0f;
+static const float ZoomSpeed = 3.0f;
+
+
 void Camera::Init()
 {
     // Start the camera at the origin
-    m_v3Position = glm::vec3( 0, 0, -5 );
+    m_v3Position = glm::vec3( 0.0f, 0.0f, 1100.0f );
 
     // Toward -Z
-    m_fHorizontalAngle = 3.14f;
+    m_fHorizontalAngle = 0.0f;
 
     // 0 looks at the horizon
     m_fVerticalAngle = 0.0f;
 
     // FoV is the level of zoom. 80° = very wide angle, huge deformations. 60° – 45° : standard. 20° : big zoom.
-    m_fInitialFieldOfView = 45.0f;
+    m_fFieldOfView = 50.0f;
 
-    // 3 Units per second
-    m_fSpeed = 100.0f;
+    m_fNearPlane = 0.01f;
 
-    float m_fMouseSpeed = 0.005f;
+    m_fFarPlane = 100000.0f;
+
+    m_fViewportAspectRatio = 4.0f/3.0f;
 
 
     m_iMouseX = 0;
     m_iMouseY = 0;
     m_iMouseScroll = 0;
-    m_bUp = false;
+    m_bForward = false;
     m_bRight = false;
-    m_bDown = false;
+    m_bBackward = false;
     m_bLeft = false;
+    m_bUp = false;
+    m_bDown = false;
+
 }
 
-void Camera::HandleInput(SDL_Event* event)
+void Camera::HandleInput(SDL_Event* event, float delta_time)
 {
-    //SDL_GetMouseState(&m_iMouseX, &m_iMouseY);
-    //printf("Normal: x = %i and y = %i\n", m_iMouseX, m_iMouseY);
-    SDL_GetRelativeMouseState(&m_iMouseX, &m_iMouseY);
-    //printf("Relative: x = %i and y = %i\n", mouse_x, mouse_y);
+    int mouse_x, mouse_y;
+    SDL_GetRelativeMouseState(&mouse_x, &mouse_y);
     if(event->type == SDL_KEYDOWN )
     {
+        float movement_speed = CameraSpeed;
         if( event->key.keysym.sym == SDLK_UP || event->key.keysym.sym == SDLK_w )
         {
-            m_bUp = true;
+            printf("Forward x=%f, y=%f, z=%f\n", m_v3Position.x, m_v3Position.y, m_v3Position.z);
+            OffsetPosition( movement_speed * Forward() );
         }
-        else
+        if( event->key.keysym.sym == SDLK_DOWN || event->key.keysym.sym == SDLK_s )
         {
-            m_bUp = false;
+            printf("Backward x=%f, y=%f, z=%f\n", m_v3Position.x, m_v3Position.y, m_v3Position.z);
+            OffsetPosition( movement_speed * -Forward() );
         }
-        if( event->key.keysym.sym == SDLK_RIGHT || event->key.keysym.sym == SDLK_d)
+        if( event->key.keysym.sym == SDLK_RIGHT || event->key.keysym.sym == SDLK_d )
         {
-            m_bRight = true;
-        }
-        else
-        {
-            m_bRight = false;
-        }
-
-        if( event->key.keysym.sym == SDLK_DOWN || event->key.keysym.sym == SDLK_s)
-        {
-            m_bDown = true;
-        }
-        else
-        {
-            m_bDown = false;
+            printf("RIGHT x=%f, y=%f, z=%f\n", m_v3Position.x, m_v3Position.y, m_v3Position.z);
+            OffsetPosition( movement_speed * Right() );
         }
         if( event->key.keysym.sym == SDLK_LEFT || event->key.keysym.sym == SDLK_a )
         {
-            m_bLeft = true;
+            printf("LEFT x=%f, y=%f, z=%f\n", m_v3Position.x, m_v3Position.y, m_v3Position.z);
+            OffsetPosition( movement_speed * -Right() );
         }
-        else
+        if( event->key.keysym.sym == SDLK_z )
         {
-            m_bLeft = false;
+            printf("Up x=%f, y=%f, z=%f\n", m_v3Position.x, m_v3Position.y, m_v3Position.z);
+            OffsetPosition( movement_speed * Up() );
         }
-    }
-    else
-    {
-        m_bUp = false;
-        m_bRight = false;
-        m_bDown = false;
-        m_bLeft = false;
+        if( event->key.keysym.sym == SDLK_x )
+        {
+            printf("Up x=%f, y=%f, z=%f\n", m_v3Position.x, m_v3Position.y, m_v3Position.z);
+            OffsetPosition( movement_speed * -Up() );
+        }
+
     }
 
     if(event->type == SDL_MOUSEWHEEL )
     {
-        // we only want the up and down scroll which is y
-        m_iMouseScroll += event->wheel.y;
-        printf("scroll = %d\n", m_iMouseScroll);
+        // we only want the up and down scroll which is -y
+        float fieldOfView = m_fFieldOfView + -ZoomSpeed * event->wheel.y;
+        if(fieldOfView < 5.0f) fieldOfView = 5.0f;
+        if(fieldOfView > 130.0f) fieldOfView = 130.0f;
+        m_fFieldOfView = fieldOfView;
     }
+
+
+    //OffsetOrientation( MouseSensitivity * mouse_x, MouseSensitivity * mouse_y);
+}
+
+void Camera::OffsetOrientation(float up_angle, float right_angle)
+{
+    m_fHorizontalAngle += right_angle;
+    m_fVerticalAngle += up_angle;
+    NormalizeAngles();
+}
+
+void Camera::NormalizeAngles()
+{
+    m_fHorizontalAngle = fmodf(m_fHorizontalAngle, 360.0f);
+    //fmodf can return negative values, but this will make them all positive
+    if(m_fHorizontalAngle < 0.0f)
+        m_fHorizontalAngle += 360.0f;
+
+    if(m_fVerticalAngle > MaxVerticalAngle)
+        m_fVerticalAngle = MaxVerticalAngle;
+    else if(m_fVerticalAngle < -MaxVerticalAngle)
+        m_fVerticalAngle = -MaxVerticalAngle;
 }
 
 void Camera::Update( float delta_time )
 {
-    m_fHorizontalAngle = m_fMouseSpeed * delta_time * float( m_iMouseX);
-    m_fVerticalAngle = m_fMouseSpeed * delta_time * float( m_iMouseY);
-
-    glm::vec3 direction = glm::vec3(
-        cos(m_fVerticalAngle) * sin(m_fHorizontalAngle),
-        sin(m_fVerticalAngle),
-        cos(m_fVerticalAngle) * cos(m_fHorizontalAngle)
-        );
-
-    // Right vector
-    glm::vec3 right = glm::vec3(
-        sin(m_fHorizontalAngle - 3.14f/2.0f),
-        0,
-        cos(m_fHorizontalAngle - 3.14f/2.0f)
-        );
-
-    glm::vec3 up = glm::cross( right, direction );
-
-    if( m_bUp )
-    {
-        printf("UP x=%f, y=%f, z=%f\n", m_v3Position.x, m_v3Position.y, m_v3Position.z);
-        m_v3Position += direction * delta_time * m_fSpeed;
-    }
-    if( m_bDown )
-    {
-        printf("DOWN x=%f, y=%f, z=%f\n", m_v3Position.x, m_v3Position.y, m_v3Position.z);
-        m_v3Position -= direction * delta_time * m_fSpeed;
-    }
-    if( m_bRight )
-    {
-        printf("RIGHT x=%f, y=%f, z=%f\n", m_v3Position.x, m_v3Position.y, m_v3Position.z);
-        m_v3Position += right * delta_time * m_fSpeed;
-    }
-    if( m_bLeft )
-    {
-        printf("LEFT x=%f, y=%f, z=%f\n", m_v3Position.x, m_v3Position.y, m_v3Position.z);
-        m_v3Position -= right * delta_time * m_fSpeed;
-    }
-
     // Limit Mouse Scroll
     if( m_iMouseScroll < -14 )
     {
@@ -137,29 +125,66 @@ void Camera::Update( float delta_time )
     {
         m_iMouseScroll = 3;
     }
-
-    float FoV = m_fInitialFieldOfView - 5 * m_iMouseScroll;
-
-    // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-    m_m4ProjectionMatrix = glm::perspective(FoV, 4.0f / 3.0f, 0.1f, 100.0f);
-    // Camera matrix
-    m_m4ViewMatrix       = glm::lookAt(
-        m_v3Position,           // Camera is here
-        m_v3Position+direction, // and looks here : at the same position, plus "direction"
-        up                  // Head is up (set to 0,-1,0 to look upside-down)
-        );
 }
 
-glm::mat4 Camera::GetProjectionMatrix()
+void Camera::OffsetPosition(const glm::vec3& offset)
 {
-    return m_m4ProjectionMatrix;
+    m_v3Position += offset;
 }
 
-glm::mat4 Camera::GetViewMatrix()
+glm::mat4 Camera::GetProjectionMatrix() const
 {
-    return m_m4ViewMatrix;
+    return glm::perspective(m_fFieldOfView, m_fViewportAspectRatio, m_fNearPlane, m_fFarPlane);
 }
+
+
+glm::mat4 Camera::Orientation() const
+{
+    glm::mat4 orientation;
+    orientation = glm::rotate(orientation, m_fVerticalAngle, glm::vec3(1.0f, 0.0f,0.0f) );
+    orientation = glm::rotate(orientation, m_fHorizontalAngle, glm::vec3(0.0f, 1.0f, 0.0f) );
+    return orientation;
+}
+
+glm::mat4 Camera::GetViewMatrix() const
+{
+    return Orientation() * glm::translate(glm::mat4(), -m_v3Position);
+}
+
+glm::vec3 Camera::Forward() const
+{
+    glm::vec4 forward = glm::inverse(Orientation()) * glm::vec4( 0.0f, 0.0f, -1.0f, 1.0f );
+    return glm::vec3(forward);
+}
+
+glm::vec3 Camera::Right() const
+{
+    glm::vec4 right = glm::inverse(Orientation()) * glm::vec4( 1.0f, 0.0f, 0.0f, 1.0f );
+    return glm::vec3(right);
+}
+
+glm::vec3 Camera::Up() const
+{
+    glm::vec4 up = glm::inverse(Orientation()) * glm::vec4( 0.0f, 1.0f, 0.0f, 1.0f );
+    return glm::vec3(up);
+}
+
+glm::mat4 Camera::GetMatrix() const
+{
+    return GetProjectionMatrix() * GetViewMatrix();
+}
+
 
 void Camera::CleanUp()
 {
+}
+
+int Camera::GetX()
+{
+    return m_v3Position.b;
+}
+
+int Camera::GetY()
+{
+    return m_v3Position.p;
 }

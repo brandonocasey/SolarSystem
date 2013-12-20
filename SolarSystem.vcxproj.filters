@@ -21,13 +21,10 @@
     <ClCompile Include="SimulationEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Sun.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Planet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseSphere.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -41,21 +38,15 @@
     <ClInclude Include="BaseSphere.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sun.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Planet.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Triangle.vshader">
+    <None Include="Planet.vertex_shader">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="Triangle.fshader">
+    <None Include="Planet.fragment_shader">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
